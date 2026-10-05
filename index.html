@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Horror Movie Madness</title>
+  <meta name="description" content="A Night of Horror Movie Madness — Saturday, October 24th at Scrub Jay House. RSVP and sign up for the potluck.">
+  <meta property="og:title" content="A Night of Horror Movie Madness">
+  <meta property="og:description" content="Saturday, October 24th · 6 PM until the last one stands · Scrub Jay House">
+  <meta name="theme-color" content="#0b130e">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='42' fill='%23dcdcc0'/><circle cx='36' cy='38' r='9' fill='%23b9b89c'/><circle cx='62' cy='60' r='12' fill='%23b9b89c'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Cinzel+Decorative:wght@700;900&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Decorative frame + trees (fixed, behind content) -->
+  <div class="frame" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+  <svg class="tree tree-left" aria-hidden="true" viewBox="0 0 300 420"><use href="#tree"/></svg>
+  <svg class="tree tree-right" aria-hidden="true" viewBox="0 0 300 420"><use href="#tree"/></svg>
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="bat" viewBox="0 0 64 28">
+        <path d="M32 9c-1.6-3-3.4-3.2-3.4-3.2l.9 3.4C24 6 16 3 6 4c4 2.5 5 6 4.6 9.5C14 11 19 12.5 21.5 16c2-2.6 5.6-3 7.5-1.2 1 1.5 2 3.6 3 6 1-2.4 2-4.5 3-6 1.9-1.8 5.5-1.4 7.5 1.2C45 12.5 50 11 53.4 13.5 53 10 54 6.5 58 4c-10-1-18 2-23.5 5.2l.9-3.4S33.6 6 32 9z"/>
+      </symbol>
+      <symbol id="tree" viewBox="0 0 300 420">
+        <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path stroke-width="16" d="M70 430 C72 360 64 300 80 240 C92 196 88 160 104 120"/>
+          <path stroke-width="9" d="M80 250 C120 220 150 214 190 180 C214 160 236 150 262 150"/>
+          <path stroke-width="7" d="M104 122 C116 92 112 64 132 30"/>
+          <path stroke-width="6" d="M92 176 C70 150 46 140 20 118"/>
+          <path stroke-width="5" d="M190 182 C200 150 196 120 214 92"/>
+          <path stroke-width="4" d="M150 212 C168 230 196 236 230 244"/>
+          <path stroke-width="3" d="M214 94 C226 80 238 76 252 62"/>
+          <path stroke-width="3" d="M214 94 C210 74 214 56 206 36"/>
+          <path stroke-width="3" d="M132 32 C142 22 156 18 168 6"/>
+          <path stroke-width="3" d="M120 70 C102 56 94 40 82 26"/>
+          <path stroke-width="3" d="M46 140 C40 120 42 104 34 86"/>
+          <path stroke-width="2.5" d="M262 150 C272 140 282 138 296 132"/>
+          <path stroke-width="2.5" d="M230 244 C246 236 258 238 274 228"/>
+          <path stroke-width="2.5" d="M20 118 C12 112 6 104 0 100"/>
+          <path stroke-width="2" d="M240 152 C248 136 246 124 254 110"/>
+          <path stroke-width="2" d="M168 196 C176 176 172 160 180 146"/>
+        </g>
+      </symbol>
+    </defs>
+  </svg>
+
+  <main>
+    <!-- ================= THE INVITATION ================= -->
+    <header class="invite">
+      <div class="sky" aria-hidden="true">
+        <div class="moon"><i></i><i></i><i></i><i></i></div>
+        <svg class="bat b1"><use href="#bat"/></svg>
+        <svg class="bat b2"><use href="#bat"/></svg>
+        <svg class="bat b3"><use href="#bat"/></svg>
+        <svg class="bat b4"><use href="#bat"/></svg>
+      </div>
+
+      <p class="salute"><em>To all our dearest</em></p>
+      <p class="guests">Final Girls, Mad Scientists,<br>Mummies, Masked Slashers,<br><em>and</em> Things from the Swamp</p>
+      <p class="salute"><em>Please join us for</em></p>
+      <p class="night-of">A Night of</p>
+      <h1 class="title">
+        <span class="t1">Horror Movie</span>
+        <span class="t2">Madness</span>
+      </h1>
+      <p class="date">Saturday · October 24th</p>
+      <p class="time"><em>6 PM until the last one stands</em></p>
+      <p class="place">Scrub Jay House</p>
+
+      <a class="cta" href="#rsvp">RSVP &amp; claim your dish</a>
+    </header>
+
+    <!-- ================= THE DETAILS ================= -->
+    <section class="card details" aria-label="Party details">
+      <p>Please bring <strong>Food, Drinks,</strong><br>or <strong>Desserts</strong> to share!</p>
+      <div class="moon-divider" aria-hidden="true"><span>((</span><b></b><span>))</span></div>
+      <p class="big">Costumes are<br>encouraged</p>
+      <p>but not required – wear your most</p>
+      <p class="glow">Movie Monstrous</p>
+      <p>Any horror classic goes!</p>
+      <div class="moon-divider" aria-hidden="true"><span>((</span><b></b><span>))</span></div>
+      <p>Awards will be granted for</p>
+      <p class="big tight">Best Costume<br>Best Food or Drink</p>
+
+      <div class="rsvp-box">
+        <p class="rsvp-by">RSVP by October 17th</p>
+        <p>and tell us what you’re bringing:</p>
+        <a href="#rsvp"><em>Sign the guest list below</em></a>
+      </div>
+
+      <p class="fine">This affair is designed for <em>Seasoned Slashers, Final Girls, and Fully-Grown Monsters</em> only. Please leave all fresh meat, wee monsters, and other tiny survivors at home or in the care of a trusted viewer.</p>
+    </section>
+
+    <!-- ================= BODY COUNT ================= -->
+    <section class="card bodycount" aria-labelledby="bc-h">
+      <h2 id="bc-h">The Body Count</h2>
+      <div class="stats">
+        <div class="stat"><span class="num" id="stat-invited">–</span><span class="lbl">Invited</span></div>
+        <div class="stat"><span class="num" id="stat-expected">–</span><span class="lbl">Expected</span></div>
+        <div class="stat"><span class="num" id="stat-rsvp">–</span><span class="lbl">Souls confirmed</span></div>
+        <div class="stat"><span class="num" id="stat-days">–</span><span class="lbl" id="stat-days-lbl">Nights to go</span></div>
+      </div>
+      <p class="meter" aria-hidden="true"><span id="meter-fill"></span></p>
+      <p class="fine" id="stat-note"></p>
+    </section>
+
+    <!-- ================= RSVP FORM ================= -->
+    <section class="card" id="rsvp" aria-labelledby="rsvp-h">
+      <h2 id="rsvp-h">Sign the Guest List</h2>
+      <p class="sub"><em>Tell us who’s coming and what you’re bringing to the feast.</em></p>
+
+      <form id="rsvp-form" novalidate>
+        <label>Your name(s)
+          <input name="name" required maxlength="60" autocomplete="name" placeholder="e.g. Laurie Strode">
+        </label>
+
+        <div class="row">
+          <label>Will you survive the night?
+            <select name="attending">
+              <option value="Yes">Yes, I’ll be there</option>
+              <option value="Maybe">Maybe… if I live</option>
+              <option value="No">Can’t make it</option>
+            </select>
+          </label>
+          <label>How many of you?
+            <input name="guests" type="number" min="1" max="10" value="1" inputmode="numeric">
+          </label>
+        </div>
+
+        <fieldset class="bring">
+          <div class="row">
+            <label>Bringing
+              <select name="category">
+                <option value="Food">Food</option>
+                <option value="Drink">Drink</option>
+                <option value="Dessert">Dessert</option>
+                <option value="Other">Something else</option>
+              </select>
+            </label>
+            <label class="grow">What is it?
+              <input name="item" maxlength="120" placeholder="e.g. Bloody Mary punch">
+            </label>
+          </div>
+        </fieldset>
+
+        <label>Note to the hosts <span class="opt">(private — only the hosts see this)</span>
+          <textarea name="note" rows="2" maxlength="500" placeholder="Allergies, costume secrets, ride needed…"></textarea>
+        </label>
+
+        <!-- spam trap: humans never see this -->
+        <label class="hp" aria-hidden="true">Website <input name="website" tabindex="-1" autocomplete="off"></label>
+
+        <button type="submit">Seal it in blood</button>
+        <p class="form-msg" id="form-msg" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <!-- ================= THE FEAST ================= -->
+    <section class="card" id="feast" aria-labelledby="feast-h">
+      <h2 id="feast-h">The Feast</h2>
+      <p class="sub"><em>What’s already on the menu — avoid three of the same cursed dip.</em></p>
+      <p class="demo-note" id="demo-note" hidden>Showing sample entries — connect a Google Sheet to go live (see README).</p>
+      <div class="feast-grid" id="feast-grid">
+        <p class="loading"><em>Summoning the guest list…</em></p>
+      </div>
+      <div class="guestlist" id="guestlist" hidden>
+        <h3>Also lurking</h3>
+        <p id="guestlist-names"></p>
+      </div>
+    </section>
+
+    <footer>
+      <p><em>Scrub Jay House · October 24th · Survive the night</em></p>
+    </footer>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
