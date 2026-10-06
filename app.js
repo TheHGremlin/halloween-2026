@@ -13,14 +13,18 @@
   // Google Apps Script can take a minute or more to wake up.
   const TIMEOUT_MS = 120000;
 
-  // Entries never carry names: the page only shows counts and the menu.
   const DEMO_ENTRIES = [
-    { guests: 1, attending: "Yes", category: "Food", item: "Michael Myers' meatballs" },
-    { guests: 2, attending: "Yes", category: "Drink", item: "Boomstick punch" },
-    { guests: 1, attending: "Maybe", category: "Dessert", item: "Prom-night cherry trifle" },
-    { guests: 2, attending: "Yes", category: "Food", item: "It's-alive seven-layer dip" },
-    { guests: 1, attending: "Yes", category: "", item: "" },
+    { name: "Laurie", guests: 1, attending: "Yes", category: "Food", item: "Michael Myers' meatballs" },
+    { name: "Ash", guests: 2, attending: "Yes", category: "Drink", item: "Boomstick punch" },
+    { name: "Carrie", guests: 1, attending: "Maybe", category: "Dessert", item: "Prom-night cherry trifle" },
+    { name: "Victor", guests: 2, attending: "Yes", category: "Food", item: "It's-alive seven-layer dip" },
+    { name: "Sidney", guests: 1, attending: "Yes", category: "", item: "" },
   ];
+
+  // Read-only web view of the published "Public" tab, for impatient guests.
+  const SHEET_VIEW_URL =
+    CFG.publicSheetUrl ||
+    (CFG.publicCsvUrl ? CFG.publicCsvUrl.replace("/pub?", "/pubhtml?").replace(/&?output=csv/, "") : "");
 
   let entries = [];
   let submitGen = 0; // bumped on each saved RSVP; see load()
@@ -91,22 +95,21 @@
       for (const d of dishes) {
         const li = el("li");
         li.appendChild(el("span", "dish", d.item));
-        if (d.attending === "Maybe") li.appendChild(el("span", "tag-maybe", "(maybe)"));
+        const who = el("span", "who", "brought by " + d.name);
+        if (d.attending === "Maybe") who.appendChild(el("span", "tag-maybe", "(maybe)"));
+        li.appendChild(who);
         ul.appendChild(li);
       }
       box.appendChild(ul);
       grid.appendChild(box);
     }
 
-    const souls = coming
-      .filter((e) => !(e.item && e.item.trim()))
-      .reduce((s, e) => s + (Number(e.guests) || 1), 0);
+    const noDish = coming.filter((e) => !(e.item && e.item.trim()));
     const gl = $("guestlist");
-    if (souls) {
-      $("guestlist-names").textContent =
-        souls === 1
-          ? "1 soul is coming empty-handed. The spirits forgive them."
-          : `${souls} souls are coming empty-handed. The spirits forgive them.`;
+    if (noDish.length) {
+      $("guestlist-names").textContent = noDish
+        .map((e) => e.name + (Number(e.guests) > 1 ? ` (+${e.guests - 1})` : "") + (e.attending === "Maybe" ? " — maybe" : ""))
+        .join(" · ");
       gl.hidden = false;
     } else {
       gl.hidden = true;
@@ -120,7 +123,7 @@
 
   // ---------------- Data ----------------
   // The last list this browser saw, shown instantly while a fresh one loads.
-  const STORE_KEY = "hmm-entries-v2";
+  const STORE_KEY = "hmm-entries-v3";
   // When this browser last saved an RSVP; see fetchList().
   const SUBMITTED_KEY = "hmm-submitted-at";
   const PUBLISH_LAG_MS = 10 * 60 * 1000;
@@ -185,7 +188,8 @@
         return parseCsv(await res.text())
           .slice(1)
           .filter((r) => r.some((c) => c.trim()))
-          .map(([guests, attending, category, item]) => ({
+          .map(([name, guests, attending, category, item]) => ({
+            name: name || "",
             guests: Number(guests) || 1,
             attending: attending || "",
             category: category || "",
@@ -223,8 +227,24 @@
       console.error(err);
       if (saved) return; // keep showing the last known list
       renderStats();
-      $("feast-grid").replaceChildren(el("p", "loading", "The spirits are quiet… couldn't load the guest list. Try refreshing."));
+      const p = el("p", "loading", "The spirits are quiet… couldn't load the guest list. Try refreshing");
+      if (SHEET_VIEW_URL) {
+        p.append(", or ");
+        const a = el("a", null, "peek at the guest list sheet");
+        a.href = SHEET_VIEW_URL;
+        a.target = "_blank";
+        a.rel = "noopener";
+        p.append(a);
+      }
+      p.append(".");
+      $("feast-grid").replaceChildren(p);
     }
+  }
+
+  // Point the "Google is slow" note at the read-only sheet, if published.
+  if (SHEET_VIEW_URL) {
+    $("sheet-link").href = SHEET_VIEW_URL;
+    $("sheet-link-wrap").hidden = false;
   }
 
   // ---------------- Form ----------------
@@ -240,9 +260,9 @@
 
   // Returns the fresh entry list if it holds one more copy of `entry` than
   // the page already knew about (i.e. the submission was saved), else null.
-  // (Lists carry no names, so match on everything else.)
   async function savedEntries(entry) {
     const same = (e) =>
+      String(e.name) === entry.name &&
       String(e.item || "") === entry.item &&
       String(e.category || "") === entry.category &&
       String(e.attending) === entry.attending &&
@@ -290,7 +310,7 @@
     setMsg("Sending your soul into the void… (this can take a couple spooky minutes)");
 
     try {
-      const entry = { guests: Number(payload.guests), attending, category: payload.category, item: payload.item };
+      const entry = { name: payload.name, guests: Number(payload.guests), attending, category: payload.category, item: payload.item };
       if (LIVE) {
         let data = null;
         try {

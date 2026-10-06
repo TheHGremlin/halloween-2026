@@ -439,6 +439,8 @@ button:focus-visible, .cta:focus-visible, a:focus-visible { outline: 2px solid v
   color: var(--green);
 }
 
+.zombie-note { margin: -6px 0 18px !important; }
+
 .form-msg { min-height: 1.4em; margin-top: 12px !important; text-align: center; font-style: italic; }
 .form-msg.ok { color: var(--green); }
 .form-msg.err { color: var(--danger); }

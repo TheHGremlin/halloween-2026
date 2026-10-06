@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Cinzel+Decorative:wght@700;900&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=8">
+  <link rel="stylesheet" href="styles.css?v=9">
 </head>
 <body>
   <!-- Decorative frame + trees (fixed, behind content) -->
@@ -114,8 +114,8 @@
       <p class="sub"><em>Tell us who’s coming and what you’re bringing to the feast.</em></p>
 
       <form id="rsvp-form" novalidate>
-        <label>Your name(s)
-          <input name="name" required maxlength="60" autocomplete="name" placeholder="e.g. Laurie Strode">
+        <label>Your first name(s)
+          <input name="name" required maxlength="60" autocomplete="given-name" placeholder="First names only, e.g. Laurie &amp; Ash">
         </label>
 
         <div class="row">
@@ -157,14 +157,15 @@
         <button type="submit">Seal it in blood</button>
         <p class="form-msg" id="form-msg" role="status" aria-live="polite"></p>
 
-        <p class="crypt-note"><strong>Sealed in the crypt.</strong> Your name stays between you and the hosts. This page only reveals the body count and what’s on the menu, never who’s bringing it. Notes to the hosts are for their eyes alone.</p>
+        <p class="crypt-note"><strong>Sealed in the crypt.</strong> Only your first name and your dish rise onto this page. Notes to the hosts are for their eyes alone.</p>
       </form>
     </section>
 
     <!-- ================= THE FEAST ================= -->
     <section class="card" id="feast" aria-labelledby="feast-h">
       <h2 id="feast-h">The Feast</h2>
-      <p class="sub"><em>What’s on the menu so far. The names stay buried; only the dishes rise. Avoid three of the same cursed dip.</em></p>
+      <p class="sub"><em>What’s already on the menu — avoid three of the same cursed dip.</em></p>
+      <p class="crypt-note zombie-note" id="zombie-note"><strong>Google shambles at the pace of a zombie.</strong> This guest list is dug up from a Google Sheet, and it can be slow to rise and a little finicky. <span id="sheet-link-wrap" hidden>Too impatient to wait for the dead? <a id="sheet-link" target="_blank" rel="noopener">Peek at the guest list sheet</a> instead.</span></p>
       <p class="demo-note" id="demo-note" hidden>Showing sample entries — connect a Google Sheet to go live (see README).</p>
       <div class="feast-grid" id="feast-grid">
         <p class="loading"><em>Summoning the guest list… (this can take a couple spooky minutes)</em></p>
@@ -180,7 +181,7 @@
     </footer>
   </main>
 
-  <script src="config.js?v=8"></script>
-  <script src="app.js?v=8"></script>
+  <script src="config.js?v=9"></script>
+  <script src="app.js?v=9"></script>
 </body>
 </html>

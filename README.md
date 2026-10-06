@@ -35,7 +35,7 @@ An **RSVPs** tab is created automatically on the first submission.
 
 7. **Fast loading (recommended):** in the script editor, pick **setUp** in the function
    dropdown and click **Run** (approve the permission prompt). This creates a **Public**
-   tab holding only guest counts, attending, category and dish — no names, no notes —
+   tab holding only name, guests, attending, category and dish — no timestamps or notes —
    and makes your hand edits refresh the site's cached list.
 8. In the Sheet: **File → Share → Publish to web** → choose the **Public** tab (not
    "Entire document") and **Comma-separated values (.csv)** → **Publish**. Paste that link
