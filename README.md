@@ -33,6 +33,15 @@ so you can open `index.html` locally and see it right away.
 
 An **RSVPs** tab is created automatically on the first submission.
 
+7. **Fast loading (recommended):** in the script editor, pick **setUp** in the function
+   dropdown and click **Run** (approve the permission prompt). This creates a **Public**
+   tab holding only guest counts, attending, category and dish — no names, no notes —
+   and makes your hand edits refresh the site's cached list.
+8. In the Sheet: **File → Share → Publish to web** → choose the **Public** tab (not
+   "Entire document") and **Comma-separated values (.csv)** → **Publish**. Paste that link
+   into `publicCsvUrl` in `config.js`. The site then loads in about a second; the
+   published copy lags the Sheet by a few minutes.
+
 **Managing entries:** edit or delete rows right in the sheet. To hide a row from the
 website without deleting it, type anything in its **Hide** column. The
 *Note to hosts* column is never shown on the site.

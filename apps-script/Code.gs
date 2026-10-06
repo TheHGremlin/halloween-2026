@@ -22,6 +22,7 @@
 const SHEET_ID = "";
 
 const SHEET_NAME = "RSVPs";
+const PUBLIC_SHEET_NAME = "Public";
 const HEADERS = ["Timestamp", "Name", "Guests", "Attending", "Category", "Item", "Note to hosts", "Hide"];
 
 const CACHE_KEY = "public-entries";
@@ -55,14 +56,14 @@ function clean_(value, max) {
   return s;
 }
 
-// Read the Sheet and refresh the cache. Private notes are never included.
+// Read the Sheet and refresh the cache. Names and private notes are never
+// included: the site only shows head counts and what's on the menu.
 function readEntries_() {
   const rows = getSheet_().getDataRange().getValues().slice(1);
   const entries = rows
     .filter(function (r) { return r[1] && !r[7]; })
     .map(function (r) {
       return {
-        name: String(r[1]).replace(/^'/, ""),
         guests: Number(r[2]) || 1,
         attending: String(r[3]),
         category: String(r[4]),
@@ -118,10 +119,25 @@ function clearCache() {
 }
 
 // Run once from the editor. Safe to run again; it won't add duplicates.
+// Also builds the "Public" tab: guests, attending, category and dish for
+// every visible RSVP, with no names or notes. Publish only that tab to the
+// web (File → Share → Publish to web → Public, CSV) for fast page loads.
 function setUp() {
+  const ss = getSpreadsheet_();
+  getSheet_();
+  let pub = ss.getSheetByName(PUBLIC_SHEET_NAME);
+  if (!pub) pub = ss.insertSheet(PUBLIC_SHEET_NAME);
+  pub.clear();
+  pub.getRange(1, 1, 1, 4).setValues([["Guests", "Attending", "Category", "Item"]]).setFontWeight("bold");
+  pub.setFrozenRows(1);
+  // RSVPs columns C:F are Guests, Attending, Category, Item; B is Name, H is Hide.
+  pub.getRange("A2").setFormula(
+    "=IFERROR(FILTER(" + SHEET_NAME + "!C2:F, " + SHEET_NAME + "!B2:B<>\"\", " + SHEET_NAME + "!H2:H=\"\"), \"\")"
+  );
+
   ScriptApp.getProjectTriggers().forEach(function (t) {
     if (t.getHandlerFunction() === "clearCache") ScriptApp.deleteTrigger(t);
   });
-  ScriptApp.newTrigger("clearCache").forSpreadsheet(getSpreadsheet_()).onChange().create();
+  ScriptApp.newTrigger("clearCache").forSpreadsheet(ss).onChange().create();
   clearCache();
 }

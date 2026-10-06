@@ -420,6 +420,25 @@ button:hover:not(:disabled) { box-shadow: 0 0 28px rgba(168, 224, 110, 0.65); tr
 button:disabled { opacity: 0.6; cursor: wait; }
 button:focus-visible, .cta:focus-visible, a:focus-visible { outline: 2px solid var(--cream); outline-offset: 3px; }
 
+.crypt-note {
+  margin: 18px 0 0 !important;
+  padding: 12px 14px;
+  font-size: 0.95rem;
+  font-style: italic;
+  line-height: 1.45;
+  text-align: center;
+  color: var(--cream-dim);
+  border: 1px dashed var(--line-faint);
+  border-radius: 8px;
+}
+.crypt-note strong {
+  font-family: var(--f-caps);
+  font-style: normal;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  color: var(--green);
+}
+
 .form-msg { min-height: 1.4em; margin-top: 12px !important; text-align: center; font-style: italic; }
 .form-msg.ok { color: var(--green); }
 .form-msg.err { color: var(--danger); }

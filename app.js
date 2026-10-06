@@ -10,12 +10,16 @@
     { key: "Other", label: "Odds & Ends" },
   ];
 
+  // Google Apps Script can take a minute or more to wake up.
+  const TIMEOUT_MS = 120000;
+
+  // Entries never carry names: the page only shows counts and the menu.
   const DEMO_ENTRIES = [
-    { name: "Laurie S.", guests: 1, attending: "Yes", category: "Food", item: "Michael Myers' meatballs" },
-    { name: "Ash W.", guests: 2, attending: "Yes", category: "Drink", item: "Boomstick punch" },
-    { name: "Carrie W.", guests: 1, attending: "Maybe", category: "Dessert", item: "Prom-night cherry trifle" },
-    { name: "Dr. Frankenstein", guests: 2, attending: "Yes", category: "Food", item: "It's-alive seven-layer dip" },
-    { name: "Sidney P.", guests: 1, attending: "Yes", category: "", item: "" },
+    { guests: 1, attending: "Yes", category: "Food", item: "Michael Myers' meatballs" },
+    { guests: 2, attending: "Yes", category: "Drink", item: "Boomstick punch" },
+    { guests: 1, attending: "Maybe", category: "Dessert", item: "Prom-night cherry trifle" },
+    { guests: 2, attending: "Yes", category: "Food", item: "It's-alive seven-layer dip" },
+    { guests: 1, attending: "Yes", category: "", item: "" },
   ];
 
   let entries = [];
@@ -87,21 +91,22 @@
       for (const d of dishes) {
         const li = el("li");
         li.appendChild(el("span", "dish", d.item));
-        const who = el("span", "who", "brought by " + d.name);
-        if (d.attending === "Maybe") who.appendChild(el("span", "tag-maybe", "(maybe)"));
-        li.appendChild(who);
+        if (d.attending === "Maybe") li.appendChild(el("span", "tag-maybe", "(maybe)"));
         ul.appendChild(li);
       }
       box.appendChild(ul);
       grid.appendChild(box);
     }
 
-    const noDish = coming.filter((e) => !(e.item && e.item.trim()));
+    const souls = coming
+      .filter((e) => !(e.item && e.item.trim()))
+      .reduce((s, e) => s + (Number(e.guests) || 1), 0);
     const gl = $("guestlist");
-    if (noDish.length) {
-      $("guestlist-names").textContent = noDish
-        .map((e) => e.name + (Number(e.guests) > 1 ? ` (+${e.guests - 1})` : "") + (e.attending === "Maybe" ? " — maybe" : ""))
-        .join(" · ");
+    if (souls) {
+      $("guestlist-names").textContent =
+        souls === 1
+          ? "1 soul is coming empty-handed. The spirits forgive them."
+          : `${souls} souls are coming empty-handed. The spirits forgive them.`;
       gl.hidden = false;
     } else {
       gl.hidden = true;
@@ -115,9 +120,16 @@
 
   // ---------------- Data ----------------
   // The last list this browser saw, shown instantly while a fresh one loads.
-  const STORE_KEY = "hmm-entries";
+  const STORE_KEY = "hmm-entries-v2";
+  // When this browser last saved an RSVP; see fetchList().
+  const SUBMITTED_KEY = "hmm-submitted-at";
+  const PUBLISH_LAG_MS = 10 * 60 * 1000;
+
+  function store(key, value) {
+    try { localStorage.setItem(key, value); } catch (_) { /* storage blocked */ }
+  }
   function remember(list) {
-    try { localStorage.setItem(STORE_KEY, JSON.stringify(list)); } catch (_) { /* storage blocked */ }
+    store(STORE_KEY, JSON.stringify(list));
   }
   function recall() {
     try {
@@ -126,6 +138,64 @@
     } catch (_) {
       return null;
     }
+  }
+  function submittedRecently() {
+    try {
+      return Date.now() - Number(localStorage.getItem(SUBMITTED_KEY) || 0) < PUBLISH_LAG_MS;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // Minimal CSV parser (handles quoted fields, "" escapes, and newlines in quotes).
+  function parseCsv(text) {
+    const rows = [];
+    let row = [], cell = "", quoted = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (quoted) {
+        if (c === '"' && text[i + 1] === '"') { cell += '"'; i++; }
+        else if (c === '"') quoted = false;
+        else cell += c;
+      } else if (c === '"') quoted = true;
+      else if (c === ",") { row.push(cell); cell = ""; }
+      else if (c === "\n" || c === "\r") {
+        if (c === "\r" && text[i + 1] === "\n") i++;
+        row.push(cell); rows.push(row); row = []; cell = "";
+      } else cell += c;
+    }
+    if (cell || row.length) { row.push(cell); rows.push(row); }
+    return rows;
+  }
+
+  async function fetchFromScript() {
+    const res = await fetch(CFG.sheetUrl, { cache: "no-store", signal: AbortSignal.timeout(TIMEOUT_MS) });
+    const data = await res.json();
+    return Array.isArray(data.entries) ? data.entries : [];
+  }
+
+  async function fetchList() {
+    // The published "Public" tab loads in about a second but lags a few
+    // minutes behind the Sheet. Right after this browser submits, ask the
+    // (slower, always current) script instead so their RSVP doesn't vanish.
+    if (CFG.publicCsvUrl && !submittedRecently()) {
+      try {
+        const res = await fetch(CFG.publicCsvUrl, { cache: "no-store", signal: AbortSignal.timeout(30000) });
+        if (!res.ok) throw new Error("Published tab returned " + res.status);
+        return parseCsv(await res.text())
+          .slice(1)
+          .filter((r) => r.some((c) => c.trim()))
+          .map(([guests, attending, category, item]) => ({
+            guests: Number(guests) || 1,
+            attending: attending || "",
+            category: category || "",
+            item: item || "",
+          }));
+      } catch (err) {
+        console.error(err); // fall back to the script
+      }
+    }
+    return fetchFromScript();
   }
 
   async function load() {
@@ -136,18 +206,17 @@
       return;
     }
     const gen = submitGen;
-    const saved = gen === 0 && recall();
+    const saved = recall();
     if (saved) {
       entries = saved;
       render();
     }
     try {
-      const res = await fetch(CFG.sheetUrl, { cache: "no-store", signal: AbortSignal.timeout(60000) });
-      const data = await res.json();
-      // Someone submitted while this (slow) request was in flight, so this
-      // list may predate their RSVP; fetch again rather than hide it.
-      if (gen !== submitGen) return load();
-      entries = Array.isArray(data.entries) ? data.entries : [];
+      const list = await fetchList();
+      // An RSVP was saved while this request was in flight; the script's
+      // reply to it is newer than this list, so keep that.
+      if (gen !== submitGen) return;
+      entries = list;
       remember(entries);
       render();
     } catch (err) {
@@ -171,13 +240,16 @@
 
   // Returns the fresh entry list if it holds one more copy of `entry` than
   // the page already knew about (i.e. the submission was saved), else null.
+  // (Lists carry no names, so match on everything else.)
   async function savedEntries(entry) {
-    const same = (e) => String(e.name) === entry.name && String(e.item || "") === entry.item;
+    const same = (e) =>
+      String(e.item || "") === entry.item &&
+      String(e.category || "") === entry.category &&
+      String(e.attending) === entry.attending &&
+      Number(e.guests) === entry.guests;
     const before = entries.filter(same).length;
     try {
-      const res = await fetch(CFG.sheetUrl, { cache: "no-store", signal: AbortSignal.timeout(60000) });
-      const data = await res.json();
-      const list = Array.isArray(data.entries) ? data.entries : [];
+      const list = await fetchFromScript();
       return list.filter(same).length > before ? list : null;
     } catch (err) {
       console.error(err);
@@ -215,14 +287,14 @@
     const btnLabel = btn.textContent;
     btn.disabled = true;
     btn.textContent = "Sending…";
-    setMsg("Sending your soul into the void… (this can take a spooky minute)");
+    setMsg("Sending your soul into the void… (this can take a couple spooky minutes)");
 
     try {
-      const entry = { name: payload.name, guests: Number(payload.guests), attending, category: payload.category, item: payload.item };
+      const entry = { guests: Number(payload.guests), attending, category: payload.category, item: payload.item };
       if (LIVE) {
         let data = null;
         try {
-          const res = await fetch(CFG.sheetUrl, { method: "POST", body: new URLSearchParams(payload), signal: AbortSignal.timeout(60000) });
+          const res = await fetch(CFG.sheetUrl, { method: "POST", body: new URLSearchParams(payload), signal: AbortSignal.timeout(TIMEOUT_MS) });
           data = await res.json();
         } catch (err) {
           // Google sometimes saves the row but sends back an empty reply.
@@ -240,6 +312,7 @@
           else entries.push(entry);
         }
         remember(entries);
+        store(SUBMITTED_KEY, String(Date.now()));
       } else {
         entries.push(entry);
       }
