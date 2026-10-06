@@ -9,7 +9,7 @@ window.PARTY_CONFIG = {
 
   // Optional, for fast loading: the "Publish to web" CSV link of the Sheet's
   // "Public" tab (see README.md). Leave blank to load from the script above.
-  publicCsvUrl: "",
+  publicCsvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7BNxX-A4khmkPSbJg2-BV-ssfNsQDd8osl-mkbSILp0lv1IcG9FG1UJaF3OQExrpSihGvELJ-cam_/pub?gid=1006893896&single=true&output=csv",
 
   // ---- The Body Count (update by hand whenever you like) ----
   invited: 40,            // how many people got an invite
