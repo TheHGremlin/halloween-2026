@@ -121,7 +121,7 @@
       return;
     }
     try {
-      const res = await fetch(CFG.sheetUrl, { cache: "no-store" });
+      const res = await fetch(CFG.sheetUrl, { cache: "no-store", signal: AbortSignal.timeout(15000) });
       const data = await res.json();
       entries = Array.isArray(data.entries) ? data.entries : [];
       render();
@@ -173,7 +173,7 @@
 
     try {
       if (LIVE) {
-        const res = await fetch(CFG.sheetUrl, { method: "POST", body: new URLSearchParams(payload) });
+        const res = await fetch(CFG.sheetUrl, { method: "POST", body: new URLSearchParams(payload), signal: AbortSignal.timeout(20000) });
         const data = await res.json();
         if (!data.ok) throw new Error(data.error || "Submission failed");
       }
