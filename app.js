@@ -19,6 +19,7 @@
   ];
 
   let entries = [];
+  let submitGen = 0; // bumped on each saved RSVP; see load()
 
   const $ = (id) => document.getElementById(id);
   const el = (tag, cls, text) => {
@@ -120,9 +121,13 @@
       render();
       return;
     }
+    const gen = submitGen;
     try {
       const res = await fetch(CFG.sheetUrl, { cache: "no-store", signal: AbortSignal.timeout(60000) });
       const data = await res.json();
+      // Someone submitted while this (slow) request was in flight, so this
+      // list may predate their RSVP; fetch again rather than hide it.
+      if (gen !== submitGen) return load();
       entries = Array.isArray(data.entries) ? data.entries : [];
       render();
     } catch (err) {
@@ -142,6 +147,22 @@
   field("attending").addEventListener("change", () => {
     bring.disabled = field("attending").value === "No";
   });
+
+  // Returns the fresh entry list if it holds one more copy of `entry` than
+  // the page already knew about (i.e. the submission was saved), else null.
+  async function savedEntries(entry) {
+    const same = (e) => String(e.name) === entry.name && String(e.item || "") === entry.item;
+    const before = entries.filter(same).length;
+    try {
+      const res = await fetch(CFG.sheetUrl, { cache: "no-store", signal: AbortSignal.timeout(60000) });
+      const data = await res.json();
+      const list = Array.isArray(data.entries) ? data.entries : [];
+      return list.filter(same).length > before ? list : null;
+    } catch (err) {
+      console.error(err);
+      return null;
+    }
+  }
 
   function setMsg(text, kind) {
     msg.textContent = text;
@@ -176,12 +197,27 @@
     setMsg("Sending your soul into the void… (this can take a few seconds)");
 
     try {
+      const entry = { name: payload.name, guests: Number(payload.guests), attending, category: payload.category, item: payload.item };
       if (LIVE) {
-        const res = await fetch(CFG.sheetUrl, { method: "POST", body: new URLSearchParams(payload), signal: AbortSignal.timeout(60000) });
-        const data = await res.json();
-        if (!data.ok) throw new Error(data.error || "Submission failed");
+        let data = null;
+        try {
+          const res = await fetch(CFG.sheetUrl, { method: "POST", body: new URLSearchParams(payload), signal: AbortSignal.timeout(60000) });
+          data = await res.json();
+        } catch (err) {
+          // Google sometimes saves the row but sends back an empty reply.
+          // Re-read the list to see whether it landed before reporting failure.
+          console.error(err);
+          setMsg("Double-checking with the spirits…");
+          const fresh = await savedEntries(entry);
+          if (!fresh) throw err;
+          entries = fresh;
+        }
+        if (data && !data.ok) throw new Error(data.error || "Submission failed");
+        if (data) entries.push(entry);
+      } else {
+        entries.push(entry);
       }
-      entries.push({ name: payload.name, guests: Number(payload.guests), attending, category: payload.category, item: payload.item });
+      submitGen++;
       render();
       form.reset();
       bring.disabled = false;
