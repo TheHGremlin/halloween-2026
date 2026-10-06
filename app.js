@@ -121,7 +121,7 @@
       return;
     }
     try {
-      const res = await fetch(CFG.sheetUrl, { cache: "no-store", signal: AbortSignal.timeout(15000) });
+      const res = await fetch(CFG.sheetUrl, { cache: "no-store", signal: AbortSignal.timeout(60000) });
       const data = await res.json();
       entries = Array.isArray(data.entries) ? data.entries : [];
       render();
@@ -168,12 +168,14 @@
     };
 
     const btn = form.querySelector("button");
+    const btnLabel = btn.textContent;
     btn.disabled = true;
-    setMsg("Sending your soul into the void…");
+    btn.textContent = "Sending…";
+    setMsg("Sending your soul into the void… (this can take a few seconds)");
 
     try {
       if (LIVE) {
-        const res = await fetch(CFG.sheetUrl, { method: "POST", body: new URLSearchParams(payload), signal: AbortSignal.timeout(20000) });
+        const res = await fetch(CFG.sheetUrl, { method: "POST", body: new URLSearchParams(payload), signal: AbortSignal.timeout(60000) });
         const data = await res.json();
         if (!data.ok) throw new Error(data.error || "Submission failed");
       }
@@ -193,6 +195,7 @@
       setMsg("Something went bump in the night and your RSVP didn't save. Please try again, or text the hosts.", "err");
     } finally {
       btn.disabled = false;
+      btn.textContent = btnLabel;
     }
   });
 
