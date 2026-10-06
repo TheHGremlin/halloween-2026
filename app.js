@@ -114,6 +114,20 @@
   }
 
   // ---------------- Data ----------------
+  // The last list this browser saw, shown instantly while a fresh one loads.
+  const STORE_KEY = "hmm-entries";
+  function remember(list) {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(list)); } catch (_) { /* storage blocked */ }
+  }
+  function recall() {
+    try {
+      const list = JSON.parse(localStorage.getItem(STORE_KEY));
+      return Array.isArray(list) ? list : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   async function load() {
     if (!LIVE) {
       entries = DEMO_ENTRIES.slice();
@@ -122,6 +136,11 @@
       return;
     }
     const gen = submitGen;
+    const saved = gen === 0 && recall();
+    if (saved) {
+      entries = saved;
+      render();
+    }
     try {
       const res = await fetch(CFG.sheetUrl, { cache: "no-store", signal: AbortSignal.timeout(60000) });
       const data = await res.json();
@@ -129,9 +148,11 @@
       // list may predate their RSVP; fetch again rather than hide it.
       if (gen !== submitGen) return load();
       entries = Array.isArray(data.entries) ? data.entries : [];
+      remember(entries);
       render();
     } catch (err) {
       console.error(err);
+      if (saved) return; // keep showing the last known list
       renderStats();
       $("feast-grid").replaceChildren(el("p", "loading", "The spirits are quiet… couldn't load the guest list. Try refreshing."));
     }
@@ -194,7 +215,7 @@
     const btnLabel = btn.textContent;
     btn.disabled = true;
     btn.textContent = "Sending…";
-    setMsg("Sending your soul into the void… (this can take a few seconds)");
+    setMsg("Sending your soul into the void… (this can take a spooky minute)");
 
     try {
       const entry = { name: payload.name, guests: Number(payload.guests), attending, category: payload.category, item: payload.item };
@@ -213,7 +234,12 @@
           entries = fresh;
         }
         if (data && !data.ok) throw new Error(data.error || "Submission failed");
-        if (data) entries.push(entry);
+        if (data) {
+          // The script replies with the updated list; fall back to adding locally.
+          if (Array.isArray(data.entries)) entries = data.entries;
+          else entries.push(entry);
+        }
+        remember(entries);
       } else {
         entries.push(entry);
       }

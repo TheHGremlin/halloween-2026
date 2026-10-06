@@ -8,6 +8,12 @@
  *
  * To hide an entry from the website (duplicate, typo, prank), type anything
  * in its "Hide" column. You can also just edit or delete rows directly.
+ *
+ * Speed: the public guest list is kept in a short-term cache so the site
+ * doesn't have to open the Sheet on every visit. New RSVPs refresh it
+ * immediately. Run `setUp` once (pick it in the function dropdown, click Run)
+ * so your own edits to the Sheet refresh it too; otherwise they show up on
+ * the site within CACHE_SECONDS.
  */
 
 // The long ID from your Sheet's address bar:
@@ -18,9 +24,17 @@ const SHEET_ID = "";
 const SHEET_NAME = "RSVPs";
 const HEADERS = ["Timestamp", "Name", "Guests", "Attending", "Category", "Item", "Note to hosts", "Hide"];
 
-function getSheet_() {
+const CACHE_KEY = "public-entries";
+const CACHE_SECONDS = 6 * 60 * 60; // the maximum Apps Script allows
+
+function getSpreadsheet_() {
   const ss = SHEET_ID ? SpreadsheetApp.openById(SHEET_ID) : SpreadsheetApp.getActiveSpreadsheet();
   if (!ss) throw new Error("No spreadsheet found: set SHEET_ID at the top of this script.");
+  return ss;
+}
+
+function getSheet_() {
+  const ss = getSpreadsheet_();
   let sh = ss.getSheetByName(SHEET_NAME);
   if (!sh) {
     sh = ss.insertSheet(SHEET_NAME);
@@ -41,8 +55,8 @@ function clean_(value, max) {
   return s;
 }
 
-// GET → public list for the website (private notes are never sent).
-function doGet() {
+// Read the Sheet and refresh the cache. Private notes are never included.
+function readEntries_() {
   const rows = getSheet_().getDataRange().getValues().slice(1);
   const entries = rows
     .filter(function (r) { return r[1] && !r[7]; })
@@ -55,10 +69,21 @@ function doGet() {
         item: String(r[5]).replace(/^'/, ""),
       };
     });
-  return json_({ ok: true, entries: entries });
+  CacheService.getScriptCache().put(CACHE_KEY, JSON.stringify(entries), CACHE_SECONDS);
+  return entries;
 }
 
-// POST ← RSVP form submission.
+function cachedEntries_() {
+  const hit = CacheService.getScriptCache().get(CACHE_KEY);
+  return hit ? JSON.parse(hit) : readEntries_();
+}
+
+// GET → public list for the website.
+function doGet() {
+  return json_({ ok: true, entries: cachedEntries_() });
+}
+
+// POST ← RSVP form submission. Replies with the updated list.
 function doPost(e) {
   const p = (e && e.parameter) || {};
   if (p.website) return json_({ ok: true }); // honeypot: bots fill hidden fields
@@ -72,13 +97,31 @@ function doPost(e) {
 
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
+  let entries;
   try {
     getSheet_().appendRow([
       new Date(), name, guests, attending, category,
       clean_(p.item, 120), clean_(p.note, 500), "",
     ]);
+    SpreadsheetApp.flush();
+    entries = readEntries_();
   } finally {
     lock.releaseLock();
   }
-  return json_({ ok: true });
+  return json_({ ok: true, entries: entries });
+}
+
+// Trigger target: any hand edit to the Sheet (typing, deleting rows,
+// the Hide column) drops the cached list so the site re-reads it.
+function clearCache() {
+  CacheService.getScriptCache().remove(CACHE_KEY);
+}
+
+// Run once from the editor. Safe to run again; it won't add duplicates.
+function setUp() {
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === "clearCache") ScriptApp.deleteTrigger(t);
+  });
+  ScriptApp.newTrigger("clearCache").forSpreadsheet(getSpreadsheet_()).onChange().create();
+  clearCache();
 }
