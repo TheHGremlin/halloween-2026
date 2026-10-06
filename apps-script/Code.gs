@@ -10,11 +10,17 @@
  * in its "Hide" column. You can also just edit or delete rows directly.
  */
 
+// The long ID from your Sheet's address bar:
+//   https://docs.google.com/spreadsheets/d/THIS_PART_HERE/edit
+// Only needed if this script wasn't created from inside the Sheet.
+const SHEET_ID = "";
+
 const SHEET_NAME = "RSVPs";
 const HEADERS = ["Timestamp", "Name", "Guests", "Attending", "Category", "Item", "Note to hosts", "Hide"];
 
 function getSheet_() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SHEET_ID ? SpreadsheetApp.openById(SHEET_ID) : SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) throw new Error("No spreadsheet found: set SHEET_ID at the top of this script.");
   let sh = ss.getSheetByName(SHEET_NAME);
   if (!sh) {
     sh = ss.insertSheet(SHEET_NAME);
