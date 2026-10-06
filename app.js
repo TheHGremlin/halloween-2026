@@ -136,9 +136,11 @@
   const form = $("rsvp-form");
   const msg = $("form-msg");
   const bring = form.querySelector(".bring");
+  // Look fields up by name: form.elements.item would return the built-in item() method.
+  const field = (n) => form.elements.namedItem(n);
 
-  form.elements.attending.addEventListener("change", () => {
-    bring.disabled = form.elements.attending.value === "No";
+  field("attending").addEventListener("change", () => {
+    bring.disabled = field("attending").value === "No";
   });
 
   function setMsg(text, kind) {
@@ -148,23 +150,23 @@
 
   form.addEventListener("submit", async (ev) => {
     ev.preventDefault();
-    const name = form.elements.name.value.trim();
-    form.elements.name.setAttribute("aria-invalid", name ? "false" : "true");
+    const name = field("name").value.trim();
+    field("name").setAttribute("aria-invalid", name ? "false" : "true");
     if (!name) {
       setMsg("We need a name to carve on the tombstone.", "err");
-      form.elements.name.focus();
+      field("name").focus();
       return;
     }
 
-    const attending = form.elements.attending.value;
+    const attending = field("attending").value;
     const payload = {
       name,
       attending,
-      guests: String(Math.min(10, Math.max(1, parseInt(form.elements.guests.value, 10) || 1))),
-      category: attending === "No" ? "" : form.elements.category.value,
-      item: attending === "No" ? "" : form.elements.item.value.trim(),
-      note: form.elements.note.value.trim(),
-      website: form.elements.website.value,
+      guests: String(Math.min(10, Math.max(1, parseInt(field("guests").value, 10) || 1))),
+      category: attending === "No" ? "" : field("category").value,
+      item: attending === "No" ? "" : field("item").value.trim(),
+      note: field("note").value.trim(),
+      website: field("website").value,
     };
 
     const btn = form.querySelector("button");
