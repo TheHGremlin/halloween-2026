@@ -12,9 +12,9 @@ window.PARTY_CONFIG = {
   publicCsvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ7BNxX-A4khmkPSbJg2-BV-ssfNsQDd8osl-mkbSILp0lv1IcG9FG1UJaF3OQExrpSihGvELJ-cam_/pub?gid=1006893896&single=true&output=csv",
 
   // ---- The Body Count (update by hand whenever you like) ----
-  invited: 70,            // how many people got an invite
-  expected: 35,           // your gut-feel attendance estimate
-  lastUpdated: "Oct 6",   // shown under the numbers; any text works
+  invited: 82,            // how many people got an invite
+  expected: 36,           // your gut-feel attendance estimate
+  lastUpdated: "Oct 14",   // shown under the numbers; any text works
 
   // Party start, used for the countdown (local time).
   partyStart: "2026-10-24T18:00:00",
