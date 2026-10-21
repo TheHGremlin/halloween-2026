@@ -13,8 +13,8 @@ window.PARTY_CONFIG = {
 
   // ---- The Body Count (update by hand whenever you like) ----
   invited: 82,            // how many people got an invite
-  expected: 36,           // your gut-feel attendance estimate
-  lastUpdated: "Oct 14",   // shown under the numbers; any text works
+  expected: 30,           // your gut-feel attendance estimate
+  lastUpdated: "Oct 21",   // shown under the numbers; any text works
 
   // Party start, used for the countdown (local time).
   partyStart: "2026-10-24T18:00:00",
