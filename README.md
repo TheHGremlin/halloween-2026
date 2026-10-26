@@ -121,7 +121,8 @@ and the countdown update themselves from the RSVPs and the date.
    it (e.g. `halloween-2027`). Keep this repo as the 2026 record.
 2. Re-theme: invite copy and section text are in `index.html`; colors, fonts and the
    moon/bat/tree art are in `styles.css` and the inline SVG in `index.html`. Update the
-   page `<title>` and the "Horror Movie Madness" header comment in `Code.gs`.
+   page `<title>`, the `description`/`og:` meta tags (they set the link preview in
+   texts), and the "Horror Movie Madness" header comment in `Code.gs`.
 3. Make a fresh Google Sheet and follow section 1 above (new Apps Script project, run
    `setUp`, publish the Public tab). Put the new `sheetUrl` and `publicCsvUrl` in
    `config.js`, along with the new `partyStart`, `rsvpBy` and Body Count numbers.
