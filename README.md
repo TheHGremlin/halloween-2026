@@ -3,6 +3,10 @@
 A one-page invite + RSVP/potluck sign-up, hosted free on GitHub Pages.
 RSVPs are stored in a Google Sheet you own (via a tiny Google Apps Script).
 
+> **Status:** the party was 2026-10-24. GitHub Pages was turned off on 2026-10-26, so the
+> site is offline; this repo is kept as the template for future years. See
+> [Reusing for a new year](#reusing-for-a-new-year).
+
 ```
 index.html          the page
 styles.css          the look
@@ -82,6 +86,51 @@ git push -u origin main
 Open `config.js`, change `invited`, `expected`, and `lastUpdated`, then commit & push
 (or edit the file directly on github.com with the ✏️ pencil icon). "Souls confirmed"
 and the countdown update themselves from the RSVPs and the date.
+
+## How it works
+
+- **RSVP form** → POST to the Apps Script web app (`sheetUrl` in `config.js`) → appends a
+  row to the **RSVPs** tab. The script replies with the updated list.
+- **Guest list** → read from the published **Public** tab as CSV (`publicCsvUrl`):
+  about half a second, but it lags the Sheet by a few minutes. For 10 minutes after a
+  browser submits an RSVP, that browser reads the slower, always-current script instead
+  so the new entry doesn't vanish. The last list seen is cached in localStorage and shown
+  instantly on the next visit.
+- Apps Script is slow and flaky (1–77 s per request, sometimes saves the row but returns
+  an empty reply). So POSTs time out after 120 s, and a failed POST re-checks the list
+  before showing an error.
+- RSVPs tab columns: Timestamp | Name | Guests | Attending | Category | Item | Note to
+  hosts | Hide. The Public tab is the formula
+  `=IFERROR(FILTER(RSVPs!B2:F, RSVPs!B2:B<>"", RSVPs!H2:H=""), "")`, created by
+  `setUp()`; it can't be edited by hand.
+- **Body Count**: `invited`, `expected` and `lastUpdated` are hand-edited in `config.js`;
+  "souls confirmed" counts Yes RSVPs. `partyStart` drives the countdown, `rsvpBy` the
+  deadline.
+- After changing `styles.css` or `app.js`, bump the `?v=N` cache-buster on the asset URLs
+  in `index.html` (last used: `v=14`), or browsers keep the old files. Pages updates
+  40–100 s after a push.
+- `SHEET_ID` in the repo copy of `Code.gs` is blank on purpose (keeps the Sheet ID out of
+  this public repo). Re-enter it when pasting into Apps Script. It must come from a
+  `/spreadsheets/d/…` URL, not a Google **Form** URL.
+- In `app.js`, form fields are read with `form.elements.namedItem(...)`:
+  `form.elements.item` is a built-in method, not the field named "item".
+
+## Reusing for a new year
+
+1. Copy this folder (without `.git`) to a new folder and create a new public repo for
+   it (e.g. `halloween-2027`). Keep this repo as the 2026 record.
+2. Re-theme: invite copy and section text are in `index.html`; colors, fonts and the
+   moon/bat/tree art are in `styles.css` and the inline SVG in `index.html`. Update the
+   page `<title>` and the "Horror Movie Madness" header comment in `Code.gs`.
+3. Make a fresh Google Sheet and follow section 1 above (new Apps Script project, run
+   `setUp`, publish the Public tab). Put the new `sheetUrl` and `publicCsvUrl` in
+   `config.js`, along with the new `partyStart`, `rsvpBy` and Body Count numbers.
+4. Leaving `sheetUrl` blank runs the page in demo mode with sample entries, which is handy
+   while re-theming.
+5. Publish (section 2), submit one clearly labeled test RSVP, check it appears, delete
+   it from the Sheet.
+6. After the party: turn off Pages (Settings → Pages), stop publishing the Public tab,
+   and archive the Apps Script deployment.
 
 ## Notes
 
